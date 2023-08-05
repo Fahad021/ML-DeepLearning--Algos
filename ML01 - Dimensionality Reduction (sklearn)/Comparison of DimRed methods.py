@@ -123,7 +123,7 @@ x_train_scaled = scaler.fit_transform(x_train)
 x_train_normzd = normz.fit_transform(x_train)
 
 #T1
-print('Task 1 --->>') 
+print('Task 1 --->>')
 dim=[1,10,20,50,100,200]
 for i in dim:
     print('\n\n DIMENSION:',i)
@@ -131,17 +131,17 @@ for i in dim:
     x_train_pca, x_train_proj_pca = pca(i,x_train)
     print ('MSE', mean_squared_error(x_train, x_train_proj_pca))
     plotz(x_train[0],x_train_proj_pca[0],28)
-    
+
     print('\nWith Normalization, Dimension:', i)
     x_train_pca, x_train_proj_pca = pca(i,x_train_normzd)
     print ('MSE', mean_squared_error(x_train_normzd, x_train_proj_pca))
     plotz(x_train[0],x_train_proj_pca[0],28)
-    
+
     print('\nStandard Scaling, Dimension:', i)
     x_train_pca, x_train_proj_pca = pca(i,x_train_scaled)
     print ('MSE', mean_squared_error(x_train_scaled, x_train_proj_pca))
     plotz(x_train[0],x_train_proj_pca[0],28)
-    
+
 #T2
 dim=2
 print('\n\nTask 2 --->>')
@@ -153,8 +153,8 @@ two_dim_plotz(x_train_pca, y_train)
 
 #kpca
 print('\nWith Normalization (on 10k obs only), Plot in Dimension:', dim)
-x_train_kpca, x_train_proj_kpca = kpca(2,x_train_normzd[0:10000],"rbf")
-two_dim_plotz(x_train_kpca, y_train[0:10000])
+x_train_kpca, x_train_proj_kpca = kpca(2, x_train_normzd[:10000], "rbf")
+two_dim_plotz(x_train_kpca, y_train[:10000])
 
 #lda
 print('\nWith Normalization, Plot in Dimension:', dim)
@@ -163,28 +163,28 @@ two_dim_plotz(x_train_lda, y_train)
 
 #isomap
 print('\nWith Normalization (on 1k obs only), Plot in Dimension:', dim)
-x_train_isomap = isomap(2,x_train_normzd[0:1000])
-two_dim_plotz(x_train_isomap, y_train[0:1000])
+x_train_isomap = isomap(2, x_train_normzd[:1000])
+two_dim_plotz(x_train_isomap, y_train[:1000])
 
 #lle
 print('\nWith Normalization (on 1k obs only), Plot in Dimension:', dim)
-x_train_lle = lle(2,30,x_train_normzd[0:1000])
-two_dim_plotz(x_train_lle, y_train[0:1000])
+x_train_lle = lle(2, 30, x_train_normzd[:1000])
+two_dim_plotz(x_train_lle, y_train[:1000])
 
 #mds
 print('\nWith Normalization (on 1k obs only), Plot in Dimension:', dim)
-x_train_mds = mds(2,x_train_normzd[0:1000])
-two_dim_plotz(x_train_mds, y_train[0:1000])
+x_train_mds = mds(2, x_train_normzd[:1000])
+two_dim_plotz(x_train_mds, y_train[:1000])
 
 #TSNE
 for p in [10,30,50]:
     print('\nWith Normalization (on 1k obs only), Plot in Dimension:', dim, ', Perp=', p)
-    x_train_tsne = tsne(2,x_train_normzd[0:1000],p)
-    two_dim_plotz(x_train_tsne, y_train[0:1000])
+    x_train_tsne = tsne(2, x_train_normzd[:1000], p)
+    two_dim_plotz(x_train_tsne, y_train[:1000])
 
 #T3    
 print('\n\nTask 3 --->>')
-Axes3D    
+Axes3D
 n_points = 1000
 X, color = datasets.samples_generator.make_s_curve (n_points, random_state = 0)
 n_neighbors = 10

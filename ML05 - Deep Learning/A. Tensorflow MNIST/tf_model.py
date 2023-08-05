@@ -66,13 +66,11 @@ def fill_feed_dict(data_set, batch_size, image_ph, label_ph):
     """
 
     image_feed, label_feed = data_set.next_batch(batch_size)
-    
-    feed_dict = {
+
+    return {
         image_ph: image_feed,
         label_ph: label_feed,
     }
-    
-    return feed_dict
 
 
 def feed_forward_net(images, config):
@@ -142,11 +140,9 @@ def compute_loss(logits, labels, reg):
         loss: Loss tensor.
     """
 
-    #Computes the cross-entropy loss.
-    #labels = tf.to_int64(labels)
-    #0.01= regularisation param
-    loss = 0.01 * reg + tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.to_int64(labels), logits=logits)
-    return loss
+    return 0.01 * reg + tf.nn.sparse_softmax_cross_entropy_with_logits(
+        labels=tf.to_int64(labels), logits=logits
+    )
 
 def evaluation(sess, image_ph, label_ph, data_set, eval_op):
     """Runs one full evaluation and computes accuracy.

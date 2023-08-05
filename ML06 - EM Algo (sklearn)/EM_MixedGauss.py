@@ -13,7 +13,7 @@ from sklearn.mixture import GMM
 
 def datacreation(means,covariance):
     dataset=[]
-    for i in range(0,1000):
+    for _ in range(0,1000):
         x=np.random.multivariate_normal(means[np.random.randint(0,len(means))],covariance)
         dataset.append(x)
     return dataset 
@@ -42,7 +42,9 @@ def extract_information_from_second_moment(Sigma, X):
     return (s_est, W, X_whit)
 
 def perform_whitening(X, U, S):
-    W = np.matmul(U[:, 0:components], np.sqrt(np.linalg.pinv(np.diag(S[0:components]))))
+    W = np.matmul(
+        U[:, 0:components], np.sqrt(np.linalg.pinv(np.diag(S[:components])))
+    )
     X_whit = np.matmul(X, W)
     return (W, X_whit)
 
@@ -55,7 +57,7 @@ def perform_tensor_power_method(X_whit, W, s_est, mu):
     for i in range(components):
         v_old = np.random.rand(components, 1)
         v_old = np.divide(v_old, np.linalg.norm(v_old))
-        for iter in range(maxiter):
+        for _ in range(maxiter):
             v_new = (np.matmul(np.transpose(X_whit), (np.matmul(X_whit, v_old) * np.matmul(X_whit, v_old)))) / len(X_whit)
             #v_new = v_new - s_est * (W' * mu * dot((W*v_old),(W*v_old)));
             #v_new = v_new - s_est * (2 * W' * W * v_old * ((W'*mu)' * (v_old)));
@@ -71,7 +73,7 @@ def perform_tensor_power_method(X_whit, W, s_est, mu):
                 lamb[i] = l
                 break
             v_old = v_new
-    
+
     return (V_est, lamb)
 
 #create data

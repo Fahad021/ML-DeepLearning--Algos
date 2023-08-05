@@ -26,17 +26,14 @@ def load_csv(filename):
     lines = []
     with open(filename) as csvfile:
         reader = csv.DictReader(csvfile)
-        for line in reader:
-            lines.append(line)
+        lines.extend(iter(reader))
     return lines
 
 def logistic(x):
-    y = 1 / (1+exp(-x))
-    return y
+    return 1 / (1+exp(-x))
 
 def dot(x, y):
-    s = sum(i*j for (i, j) in zip(x, y))
-    return s
+    return sum(i*j for (i, j) in zip(x, y))
 
 def predict(model, point):
     return logistic(dot(model,point['features']))
@@ -63,7 +60,7 @@ def update(model, point, delta, rate, lam):
     return model
 
 def initialize_model(k):
-    return [random.gauss(0, 1) for x in range(k)]
+    return [random.gauss(0, 1) for _ in range(k)]
 
 def train(data, epochs, rate, lam, delta):
     #intialize paramters
@@ -72,12 +69,12 @@ def train(data, epochs, rate, lam, delta):
     w = initialize_model(len(data[0]['features']))
     #print ("initial weights", w)
     for i in range(epochs):
-        for j in range(N):
+        for _ in range(N):
             counter+=1
             p=random.randrange(N)
             #print ("obs", p)
             #update function
-            w = update(w, data[p], delta, rate, lam)            
+            w = update(w, data[p], delta, rate, lam)
         yhat_all = [round(predict(w,data[k])) for k in range(N)]
         y_all = [data[k]['label'] for k in range(N)]
         #accuracy function
@@ -92,28 +89,21 @@ def train(data, epochs, rate, lam, delta):
 def extract_features(raw):
     data = []
     for r in raw:
-        point = {}
-        point["label"] = (r['income'] == '>50K')
-        features = []
-        features.append(1.)
-        #TODO: Add more feature extraction rules here!
-        features.append(float(r['age'])/100)
-        features.append(float(r['education_num'])/10)
-        #features.append(float(r['education_num']) >= 13)        
-        features.append(float(r['hr_per_week']) >= 41)
-        features.append(float(r['capital_gain'])/10000)
-        features.append(float(r['capital_loss'])/10000)
-        #features.append(float(r['hr_per_week'])/100)
-        features.append(r['marital'] == 'Married-civ-spouse')
-        #features.append((r['type_employer']) == 'Private')  
-        features.append((r['type_employer']) == 'Self-emp-inc')
-        features.append((r['occupation']) == 'Prof-specialty')
-        features.append((r['occupation']) == 'Exec-managerial')
-        #features.append((r['relationship']) == 'Husband')
-        #features.append((r['country']) == 'United-States')
-        features.append((r['race']) == 'White')
-        features.append((r['sex']) == 'Male')
-        point['features'] = features
+        features = [
+            1.0,
+            float(r['age']) / 100,
+            float(r['education_num']) / 10,
+            float(r['hr_per_week']) >= 41,
+            float(r['capital_gain']) / 10000,
+            float(r['capital_loss']) / 10000,
+            r['marital'] == 'Married-civ-spouse',
+            r['type_employer'] == 'Self-emp-inc',
+            r['occupation'] == 'Prof-specialty',
+            r['occupation'] == 'Exec-managerial',
+            r['race'] == 'White',
+            r['sex'] == 'Male',
+        ]
+        point = {"label": r['income'] == '>50K', 'features': features}
         data.append(point)
     return data
 
@@ -125,8 +115,7 @@ def extract_features(raw):
 #delta: cost function rate
 def submission(csv_import,epochs, rate, lam, delta):
     data=extract_features(csv)
-    model = train(data,epochs, rate, lam, delta)
-    return model
+    return train(data,epochs, rate, lam, delta)
 
 ##LOAD FILE
 csv=load_csv('adult_train.csv')

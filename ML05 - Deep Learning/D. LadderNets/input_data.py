@@ -65,9 +65,7 @@ def extract_labels(filename, one_hot=False):
     num_items = _read32(bytestream)
     buf = bytestream.read(num_items)
     labels = numpy.frombuffer(buf, dtype=numpy.uint8)
-    if one_hot:
-      return dense_to_one_hot(labels)
-    return labels
+    return dense_to_one_hot(labels) if one_hot else labels
 
 
 class DataSet(object):
@@ -76,9 +74,8 @@ class DataSet(object):
     if fake_data:
       self._num_examples = 10000
     else:
-      assert images.shape[0] == labels.shape[0], (
-          "images.shape: %s labels.shape: %s" % (images.shape,
-                                                 labels.shape))
+      assert (images.shape[0] == labels.shape[0]
+              ), f"images.shape: {images.shape} labels.shape: {labels.shape}"
       self._num_examples = images.shape[0]
 
       # Convert shape from [num examples, rows, columns, depth]

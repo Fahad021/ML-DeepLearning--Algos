@@ -33,11 +33,7 @@ lib.print_model_settings(locals().copy())
 
 def ReLULayer(name, n_in, n_out, inputs):
     output = lib.ops.linear.Linear(
-        name+'.Linear',
-        n_in,
-        n_out,
-        inputs,
-        initialization='he'
+        f'{name}.Linear', n_in, n_out, inputs, initialization='he'
     )
     output = tf.nn.relu(output)
     return output
@@ -45,13 +41,12 @@ def ReLULayer(name, n_in, n_out, inputs):
 def Generator(n_samples, real_data):
     if FIXED_GENERATOR:
         return real_data + (1.*tf.random_normal(tf.shape(real_data)))
-    else:
-        noise = tf.random_normal([n_samples, 2])
-        output = ReLULayer('Generator.1', 2, DIM, noise)
-        output = ReLULayer('Generator.2', DIM, DIM, output)
-        output = ReLULayer('Generator.3', DIM, DIM, output)
-        output = lib.ops.linear.Linear('Generator.4', DIM, 2, output)
-        return output
+    noise = tf.random_normal([n_samples, 2])
+    output = ReLULayer('Generator.1', 2, DIM, noise)
+    output = ReLULayer('Generator.2', DIM, DIM, output)
+    output = ReLULayer('Generator.3', DIM, DIM, output)
+    output = lib.ops.linear.Linear('Generator.4', DIM, 2, output)
+    return output
 
 def Discriminator(inputs):
     output = ReLULayer('Discriminator.1', 2, DIM, inputs)
@@ -82,7 +77,7 @@ if MODE == 'wgan-gp':
     gradients = tf.gradients(disc_interpolates, [interpolates])[0]
     slopes = tf.sqrt(tf.reduce_sum(tf.square(gradients), reduction_indices=[1]))
     gradient_penalty = tf.reduce_mean((slopes-1)**2)
- 
+
     disc_cost += LAMBDA*gradient_penalty
 
 disc_params = lib.params_with_name('Discriminator')
@@ -137,10 +132,10 @@ else:
 
 print ("Generator params:")
 for var in lib.params_with_name('Generator'):
-    print ("\t{}\t{}".format(var.name, var.get_shape()))
+    print(f"\t{var.name}\t{var.get_shape()}")
 print ("Discriminator params:")
 for var in lib.params_with_name('Discriminator'):
-    print ("\t{}\t{}".format(var.name, var.get_shape()))
+    print(f"\t{var.name}\t{var.get_shape()}")
 
 frame_index = [0]
 def generate_image(true_dist):
@@ -169,22 +164,22 @@ def generate_image(true_dist):
     plt.scatter(true_dist[:, 0], true_dist[:, 1], c='orange',  marker='+')
     plt.scatter(samples[:, 0],    samples[:, 1],    c='green', marker='+')
 
-    plt.savefig('frame'+str(frame_index[0])+'.jpg')
+    plt.savefig(f'frame{str(frame_index[0])}.jpg')
     frame_index[0] += 1
 
 # Dataset iterator
 def inf_train_gen():
-    if DATASET == 'multimodal':
-       while True:
+    if DATASET != 'multimodal':
+        return
+    while True:
         dataset = []
-        for i in range(0,BATCH_SIZE):
+        for _ in range(0,BATCH_SIZE):
             toss=np.random.choice((1,2))
             if toss==1:
                 dataset.append(np.random.multivariate_normal(([0.5,0.5]),(0.01*np.identity(2))))
             else:
-                dataset.append(np.random.multivariate_normal(([-0.5,-0.5]),(0.01*np.identity(2))))  
-        dataset = np.array(dataset, dtype='float32')
-        yield dataset
+                dataset.append(np.random.multivariate_normal(([-0.5,-0.5]),(0.01*np.identity(2))))
+        yield np.array(dataset, dtype='float32')
 
 # Train loop!
 with tf.Session() as session:
@@ -195,7 +190,7 @@ with tf.Session() as session:
         if iteration > 0:
             _ = session.run(gen_train_op)
         # Train critic
-        for i in range(CRITIC_ITERS):
+        for _ in range(CRITIC_ITERS):
             _data = next(gen)
             _disc_cost, _ = session.run(
                 [disc_cost, disc_train_op],

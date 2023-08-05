@@ -44,9 +44,7 @@ def create_train_op(loss, learning_rate):
     optimizer = tf.train.AdamOptimizer(learning_rate)
     # This variable is for tracking purpose.
     global_step = tf.Variable(0, name='global_step', trainable=False)
-    # Creates the minimization training op.
-    train_op = optimizer.minimize(loss, global_step=global_step)
-    return train_op
+    return optimizer.minimize(loss, global_step=global_step)
 
 
 def train(config, train_data_set, valid_data_set=None):

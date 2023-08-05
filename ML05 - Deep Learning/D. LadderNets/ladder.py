@@ -171,8 +171,7 @@ def g_gauss(z_c, u, size):
     mu = a1 * tf.sigmoid(a2 * u + a3) + a4 * u + a5
     v = a6 * tf.sigmoid(a7 * u + a8) + a9 * u + a10
 
-    z_est = (z_c - mu) * v + mu
-    return z_est
+    return (z_c - mu) * v + mu
 
 # Decoder
 z_est = {}
@@ -181,10 +180,7 @@ for l in range(L, -1, -1):
     print( "Layer ", l, ": ", layer_sizes[l+1] if l+1 < len(layer_sizes) else None, " -> ", layer_sizes[l], ", denoising cost: ", denoising_cost[l])
     z, z_c = clean['unlabeled']['z'][l], corr['unlabeled']['z'][l]
     m, v = clean['unlabeled']['m'].get(l, 0), clean['unlabeled']['v'].get(l, 1-1e-10)
-    if l == L:
-        u = unlabeled(y_c)
-    else:
-        u = tf.matmul(z_est[l+1], weights['V'][l])
+    u = unlabeled(y_c) if l == L else tf.matmul(z_est[l+1], weights['V'][l])
     u = batch_normalization(u)
     z_est[l] = g_gauss(z_c, u, layer_sizes[l])
     z_est_bn = (z_est[l] - m) / v

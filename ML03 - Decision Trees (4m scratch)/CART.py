@@ -4,6 +4,7 @@ Created on Fri Apr 24 19:11:57 2018
 
 @author: nc57
 """
+
 import numpy as np
 from sklearn import datasets
 iris = datasets.load_iris()
@@ -14,7 +15,7 @@ trainsize = 105
 testsize = 45
 np.random.seed(0)
 index = np.random.permutation(N)
-indextrain = index[0:trainsize]
+indextrain = index[:trainsize]
 indextest = index[trainsize : : ]
 Xtrain = X[indextrain,:]
 ytrain = y[indextrain ]
@@ -24,7 +25,7 @@ Dataset=np.append(Xtrain,ytrain.reshape(-1,1),axis=1)
 
 #test split
 def test_split(index, value, dataset):
-	left, right = list(), list()
+	left, right = [], []
 	for row in dataset:
 		if row[index] < value:
 			left.append(row)
@@ -34,7 +35,7 @@ def test_split(index, value, dataset):
  
 #gini index
 def gini_index(groups, classes):
-	n_instances = float(sum([len(group) for group in groups]))
+	n_instances = float(sum(len(group) for group in groups))
 	gini = 0.0
 	for group in groups:
 		size = float(len(group))
@@ -49,7 +50,7 @@ def gini_index(groups, classes):
  
 #select the best split point for a dataset
 def get_split(dataset):
-	class_values = list(set(row[-1] for row in dataset))
+	class_values = list({row[-1] for row in dataset})
 	b_index, b_value, b_score, b_groups = 999, 999, 999, None
 	for index in range(len(dataset[0])-1):
 		for row in dataset:
@@ -102,7 +103,7 @@ def print_tree(node, depth=0):
 		print_tree(node['left'], depth+1)
 		print_tree(node['right'], depth+1)
 	else:
-		print('%s[%s]' % ((depth*' ', node)))
+		print(f"{depth * ' '}[{node}]")
  
 #tree parameters
 max_depth = 5
@@ -117,30 +118,26 @@ print_tree(tree)
 #function for predicting output
 def predict(node, row):
 	if row[node['index']] < node['value']:
-		if isinstance(node['left'], dict):
-			return predict(node['left'], row)
-		else:
-			return node['left']
+		return (
+			predict(node['left'], row)
+			if isinstance(node['left'], dict)
+			else node['left']
+		)
+	if isinstance(node['right'], dict):
+		return predict(node['right'], row)
 	else:
-		if isinstance(node['right'], dict):
-			return predict(node['right'], row)
-		else:
-			return node['right']
+		return node['right']
  
 datatest =np.append(Xtest,ytest.reshape(-1,1),axis=1)
 datatrain =np.append(Xtrain,ytrain.reshape(-1,1),axis=1)
 
 #predict with the tree
 print('\nTesting tree on TRAIN dataset..')
-output_train = []
-for row in datatrain:
-    output_train.append(predict(tree, row))
+output_train = [predict(tree, row) for row in datatrain]
 train_accuracy = float((ytrain == np.array(output_train)).sum())/float(ytrain.shape[0])
 print ('Train acuracy', train_accuracy)
 
 print('\nTesting tree on TEST dataset..')
-output_test = []
-for row in datatest:
-    output_test.append(predict(tree, row))
+output_test = [predict(tree, row) for row in datatest]
 test_accuracy = float((ytest == np.array(output_test)).sum())/float(ytest.shape[0])
 print ('Test acuracy', test_accuracy)

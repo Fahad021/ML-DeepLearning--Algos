@@ -19,7 +19,7 @@ y_test = fashion_mnist[1][1]
 # Download from link    
 data = input_data.read_data_sets('data/fashion', source_url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/')
 '''
-    
+
 data = input_data.read_data_sets('data/fashion', one_hot=True)
 
 print("Training set (images) shape: {shape}".format(shape=data.train.images.shape))
@@ -45,13 +45,13 @@ plt.subplot(121)
 curr_img = np.reshape(data.train.images[0], (28,28))
 curr_lbl = np.argmax(data.train.labels[0,:])
 plt.imshow(curr_img)
-plt.title("(Label: " + str(label_dict[curr_lbl]) + ")")
+plt.title(f"(Label: {str(label_dict[curr_lbl])})")
 
 plt.subplot(122)
 curr_img = np.reshape(data.test.images[0], (28,28))
 curr_lbl = np.argmax(data.test.labels[0,:])
 plt.imshow(curr_img)
-plt.title("(Label: " + str(label_dict[curr_lbl]) + ")")
+plt.title(f"(Label: {str(label_dict[curr_lbl])})")
 
 train_X = data.train.images.reshape(-1, 28, 28, 1)
 test_X = data.test.images.reshape(-1,28,28,1)
@@ -63,7 +63,7 @@ train_y = data.train.labels
 test_y = data.test.labels
 
 training_iters = 3
-learning_rate = 0.001 
+learning_rate = 0.001
 batch_size = 256
 
 n_input = 28
@@ -102,20 +102,19 @@ def conv_net(x, weights, biases, drp, bnorm_flg):
         fc1 = tf.nn.batch_normalization(fc1, conv1_mean, conv1_var, None, None, 1e-3)
     if drp > 0.:
         fc1 = tf.nn.dropout(fc1, keep_prob=drp)
-    out = tf.add(tf.matmul(fc1, weights['out']), biases['out'])
-    return out
+    return tf.add(tf.matmul(fc1, weights['out']), biases['out'])
 
 def trainz(drp, bnorm_flg):
     print ('\nTraining for droput = ', drp)
     pred = conv_net(x, weights, biases, drp, bnorm_flg)
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
-    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)  
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     init = tf.global_variables_initializer()
-    
+
     with tf.Session() as sess:
-        sess.run(init) 
+        sess.run(init)
         train_loss = []
         test_loss = []
         train_accuracy = []
@@ -127,11 +126,15 @@ def trainz(drp, bnorm_flg):
                 batch_y = train_y[batch*batch_size:min((batch+1)*batch_size,len(train_y))]    
                 opt = sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
                 loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x, y: batch_y})
-            print("Iter " + str(i) + ", Loss= " + \
-                          "{:.6f}".format(loss) + ", Training Accuracy= " + \
-                          "{:.5f}".format(acc))
+            print(
+                (
+                    (f"Iter {str(i)}, Loss= " + "{:.6f}".format(loss))
+                    + ", Training Accuracy= "
+                )
+                + "{:.5f}".format(acc)
+            )
             print("Optimization Finished!")
-    
+
             test_acc,valid_loss = sess.run([accuracy,cost], feed_dict={x: test_X,y : test_y})
             train_loss.append(loss)
             test_loss.append(valid_loss)
@@ -139,8 +142,8 @@ def trainz(drp, bnorm_flg):
             test_accuracy.append(test_acc)
             print("Testing Accuracy:","{:.5f}".format(test_acc))
         summary_writer.close()
-    
-    
+
+
     plt.plot(range(len(train_loss)), train_loss, 'b', label='Training loss')
     plt.plot(range(len(train_loss)), test_loss, 'r', label='Test loss')
     plt.title('Training and Test loss')
@@ -149,7 +152,7 @@ def trainz(drp, bnorm_flg):
     plt.legend()
     plt.figure()
     plt.show()
-    
+
     plt.plot(range(len(train_loss)), train_accuracy, 'b', label='Training Accuracy')
     plt.plot(range(len(train_loss)), test_accuracy, 'r', label='Test Accuracy')
     plt.title('Training and Test Accuracy')

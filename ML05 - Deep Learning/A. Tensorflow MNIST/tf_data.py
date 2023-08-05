@@ -37,8 +37,9 @@ def data_reader(filename, num_pixel=784):
 
 class DataSet(object):
     def __init__(self, images, labels):
-        assert images.shape[0] == labels.shape[0], (
-            'images.shape %s labels.shape %s' % (images.shape, labels.shape))
+        assert (
+            images.shape[0] == labels.shape[0]
+        ), f'images.shape {images.shape} labels.shape {labels.shape}'
 
         self.num_samples = images.shape[0]
         # TODO: Converts the image value from [0, 255] to [0.0, 1.0].

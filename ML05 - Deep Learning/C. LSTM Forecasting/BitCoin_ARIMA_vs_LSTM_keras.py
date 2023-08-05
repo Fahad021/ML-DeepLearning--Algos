@@ -65,7 +65,7 @@ plt.show()
 plot_pacf(bt['price_feature'].diff().values[1:], lags=50)
 plt.show()
 
-predX = list()
+predX = []
 history = list(bt['price_feature'].values)
 model = ARIMA(history, order=(1,1,1))
 model_fit = model.fit(disp=0)
@@ -96,57 +96,57 @@ plt.show()
 
 modelz = ['VRNN', 'LSTM', 'GRU']
 for typez in modelz:    
-    #data for lstm
-    trainX = X[indX<'2017-09-01']
-    testX = X[indX>='2017-09-01']
-    trainY = Y[indY<'2017-09-03']
-    testY = Y[indY>='2017-09-03']
-    trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))  
-    testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
-    print ('\n\n Running Model type: {}'.format(typez))
-    model = Sequential()
-    if typez=='VRNN':
-        model.add(SimpleRNN(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
-    elif typez=='LSTM':
-        model.add(LSTM(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
-    elif typez=='GRU':
-        model.add(GRU(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
-    else:
-        print('wrong option')
-    model.add(Dropout(0.8))
-    model.add(Dense(1))
-    model.add(LeakyReLU())
-    model.compile(loss='mse', optimizer='adam')
-    model.fit(trainX, trainY, epochs=10, batch_size=10, validation_data=(testX, testY), verbose=1)
-    model.save('./savedModel')
-    
-    #predict
-    trainHat = model.predict(trainX)
-    testHat = model.predict(testX)
-    
-    #invert 
-    trainHat = scaler.inverse_transform(trainHat)
-    trainY = scaler.inverse_transform(trainY)
-    testHat = scaler.inverse_transform(testHat)       
-    testY = scaler.inverse_transform(testY)
-    
-    #rmse
-    trainScore = math.sqrt(mean_squared_error(trainY[:,0], trainHat[:,0]))
-    print('Train: %.2f RMSE' % (trainScore))
-    testScore = math.sqrt(mean_squared_error(testY[:,0], testHat[:,0]))
-    print('Test: %.2f RMSE' % (testScore))
-    
-    #plot
-    plt.plot(testY, label='Actual')
-    #plt.plot(trainPredictPlot, label='Train Preds')
-    plt.plot(testHat, label='Test Preds')
-    plt.title('Model type: {}'.format(typez))
-    #plt.title('LSTM')
-    #plt.title('GRU')
-    plt.ylabel('BitCoin Price')
-    plt.xlabel('Days')
-    plt.legend()
-    plt.show()
-    
-    model.reset_states()
+  #data for lstm
+  trainX = X[indX<'2017-09-01']
+  testX = X[indX>='2017-09-01']
+  trainY = Y[indY<'2017-09-03']
+  testY = Y[indY>='2017-09-03']
+  trainX = np.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+  testX = np.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+  print(f'\n\n Running Model type: {typez}')
+  model = Sequential()
+  if typez == 'GRU':
+    model.add(GRU(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
+  elif typez == 'LSTM':
+    model.add(LSTM(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
+  elif typez == 'VRNN':
+    model.add(SimpleRNN(units = 100, activation = 'tanh', input_shape=(1, 1), return_sequences=False))
+  else:
+    print('wrong option')
+  model.add(Dropout(0.8))
+  model.add(Dense(1))
+  model.add(LeakyReLU())
+  model.compile(loss='mse', optimizer='adam')
+  model.fit(trainX, trainY, epochs=10, batch_size=10, validation_data=(testX, testY), verbose=1)
+  model.save('./savedModel')
+
+  #predict
+  trainHat = model.predict(trainX)
+  testHat = model.predict(testX)
+
+  #invert 
+  trainHat = scaler.inverse_transform(trainHat)
+  trainY = scaler.inverse_transform(trainY)
+  testHat = scaler.inverse_transform(testHat)
+  testY = scaler.inverse_transform(testY)
+
+  #rmse
+  trainScore = math.sqrt(mean_squared_error(trainY[:,0], trainHat[:,0]))
+  print('Train: %.2f RMSE' % (trainScore))
+  testScore = math.sqrt(mean_squared_error(testY[:,0], testHat[:,0]))
+  print('Test: %.2f RMSE' % (testScore))
+
+  #plot
+  plt.plot(testY, label='Actual')
+  #plt.plot(trainPredictPlot, label='Train Preds')
+  plt.plot(testHat, label='Test Preds')
+  plt.title(f'Model type: {typez}')
+  #plt.title('LSTM')
+  #plt.title('GRU')
+  plt.ylabel('BitCoin Price')
+  plt.xlabel('Days')
+  plt.legend()
+  plt.show()
+
+  model.reset_states()
     #layer.reset_states()
